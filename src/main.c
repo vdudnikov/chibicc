@@ -34,6 +34,21 @@ static char *output_file;
 static StringArray input_paths;
 static StringArray tmpfiles;
 
+CodegenTarget targets[] = {
+  {codegen_target_amd64, "amd64"},
+  {codegen_target_tac, "tac"},
+  {NULL, NULL}
+};
+
+static const CodegenTarget* lookup_target(const char *name)
+{
+  for (int i = 0; targets[i].gen != NULL; i++) {
+    if (strcmp(name, targets[i].name) == 0)
+      return &targets[i];
+  }
+  return NULL;
+}
+
 static void usage(int status) {
   fprintf(stderr, "chibicc [ -o <path> ] <file>\n");
   exit(status);
@@ -557,8 +572,15 @@ static void cc1(void) {
   size_t buflen;
   FILE *output_buf = open_memstream(&buf, &buflen);
 
+  const char *target_name = "tac";
+  const CodegenTarget *target = lookup_target(target_name);
+
+  if (target == NULL) {
+    error("target: '%s' not found", target_name);
+  }
+
   // Traverse the AST to emit assembly.
-  codegen(prog, output_buf);
+  target->gen(prog, output_buf);
   fclose(output_buf);
 
   // Write the asembly text to a file.

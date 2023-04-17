@@ -14,6 +14,7 @@ set(
     src/type.c
     src/unicode.c
     src/gen/codegen-amd64.c
+    src/gen/jemi.c
     src/gen/codegen-ast.c
 )
 

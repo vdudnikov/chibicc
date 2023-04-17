@@ -28,6 +28,7 @@
 typedef struct Type Type;
 typedef struct Node Node;
 typedef struct Member Member;
+typedef struct CodegenTarget CodegenTarget;
 typedef struct Relocation Relocation;
 typedef struct Hideset Hideset;
 
@@ -408,7 +409,15 @@ void add_type(Node *node);
 // codegen.c
 //
 
-void codegen(Obj *prog, FILE *out);
+struct CodegenTarget {
+  void (*gen)(Obj *prog, FILE *out);
+  const char *name;
+};
+
+// Generators
+void codegen_target_amd64(Obj *prog, FILE *out);
+void codegen_target_ast(Obj *prog, FILE *out);
+
 int align_to(int n, int align);
 
 //

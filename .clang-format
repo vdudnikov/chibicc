@@ -1,0 +1,14 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+AlignOperands: DontAlign
+AllowShortFunctionsOnASingleLine: None
+BraceWrapping:
+  AfterFunction: true
+BreakBeforeBraces: WebKit
+ColumnLimit: 100
+IndentWidth: 4
+ObjCBlockIndentWidth: 4
+# AlignConsecutiveAssignments: Consecutive
+AlignAfterOpenBracket: AlwaysBreak
+AlignEscapedNewlines: LeftWithLastLine

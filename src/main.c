@@ -36,7 +36,7 @@ static StringArray tmpfiles;
 
 CodegenTarget targets[] = {
   {codegen_target_amd64, "amd64"},
-  {codegen_target_ast, "ast"},
+  {codegen_target_tac, "tac"},
   {NULL, NULL}
 };
 
@@ -572,7 +572,7 @@ static void cc1(void) {
   size_t buflen;
   FILE *output_buf = open_memstream(&buf, &buflen);
 
-  const char *target_name = "ast";
+  const char *target_name = "tac";
   const CodegenTarget *target = lookup_target(target_name);
 
   if (target == NULL) {

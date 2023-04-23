@@ -416,7 +416,7 @@ struct CodegenTarget {
 
 // Generators
 void codegen_target_amd64(Obj *prog, FILE *out);
-void codegen_target_ast(Obj *prog, FILE *out);
+void codegen_target_tac(Obj *prog, FILE *out);
 
 int align_to(int n, int align);
 

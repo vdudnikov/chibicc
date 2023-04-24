@@ -1,44 +1,68 @@
 #include "chibicc.h"
 
-FILE *OUT;
-
+static FILE *OUT;
 static int nnext_tmp;
-
-static const char *ty_kind_map[] = {
-    "void",    "bool", "char", "short", "ind",   "long", "float",  "double",
-    "ldouble", "enum", "ptr",  "func",  "array", "vla",  "struct", "union",
-};
 
 __attribute__((format(printf, 1, 2))) static void println(char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
-  vprintf(fmt, ap);
-  // vfprintf(OUT, fmt, ap);
+  // vprintf(fmt, ap);
+  vfprintf(OUT, fmt, ap);
   va_end(ap);
-  printf("\n");
-  // fprintf(OUT, "\n");
+  // printf("\n");
+  fprintf(OUT, "\n");
 }
 
-static const char *next_tmp(int ty_kind) {
+// TY_VOID,
+// TY_BOOL,
+// TY_CHAR,
+// TY_SHORT,
+// TY_INT,
+// TY_LONG,
+// TY_FLOAT,
+// TY_DOUBLE,
+// TY_LDOUBLE,
+// TY_ENUM,
+// TY_PTR,
+// TY_FUNC,
+// TY_ARRAY,
+// TY_VLA, // variable-length array
+// TY_STRUCT,
+// TY_UNION,
+
+static const char *next_tmp() {
   char *_buf = calloc(32, 1);
   sprintf(_buf, "$t%d", nnext_tmp++);
   return _buf;
 }
 
 static const char *number(Node *node) {
-  const char *tmp = next_tmp(node->ty->kind);
+  char *buf = calloc(16, 1);
   switch (node->ty->kind) {
   case TY_FLOAT:
   case TY_DOUBLE:
   case TY_LDOUBLE:
-    println("%s = %Lf", tmp, node->fval);
+    sprintf(buf, "%Lf", node->fval);
     break;
   default:
-    println("%s = %ld", tmp, node->val);
+    sprintf(buf, "%ld", node->val);
     break;
   }
 
-  return tmp;
+  return buf;
+}
+
+static const char *cast(const char *expr, int from, int to) {
+  static const char *type_name[] = {
+      "void", "bool", "char", "i16",  "i32",   "i32", "f32",    "f64",
+      "f64",  "enum", "ptr",  "func", "array", "vla", "struct", "union"};
+
+  if (from == to)
+    return expr;
+
+  char *buf = calloc(32, 1);
+  sprintf(buf, "%s(%s)", type_name[to], expr);
+  return buf;
 }
 
 // Function return variable name
@@ -46,6 +70,18 @@ static const char *gen_expr(Node *node) {
   switch (node->kind) {
   case ND_NUM:
     return number(node);
+  case ND_CAST:
+    return cast(gen_expr(node->lhs), node->lhs->ty->kind, node->ty->kind);
+  }
+
+  const char *r = gen_expr(node->rhs);
+  const char *l = gen_expr(node->lhs);
+  const char *tmp = next_tmp();
+
+  switch (node->kind) {
+  case ND_ADD:
+    println("  %s = %s + %s", tmp, l, r);
+    return tmp;
   }
 
   error_tok(node->tok, "invalid expression");
@@ -53,7 +89,6 @@ static const char *gen_expr(Node *node) {
 
 static void gen_stmt(Node *node) {
   // println("  .loc %d %d", node->tok->file->file_no, node->tok->line_no);
-  printf("%d\n", node->kind);
   switch (node->kind) {
   // case ND_IF: {
   //   int c = count();
